@@ -46,6 +46,8 @@ public:
     PressType getStartPausePress();
     PressType getStopPress();
     PressType getSelectorPress();
+    PressType getStartGapPress();     // Nowy przycisk Start Gap
+    PressType getReverseP3Press();    // Nowy przycisk odwracania P-3
     
     // Sprawdzanie przycisków wzorców
     PatternType getPatternButtonPressed();
@@ -58,6 +60,8 @@ private:
     Button btnStartPause;
     Button btnStop;
     Button btnSelector;
+    Button btnStartGap;      // Przycisk Start Gap
+    Button btnReverseP3;     // Przycisk odwracania P-3
     
     // Przyciski wzorców (15 przycisków)
     Button btnPatterns[15];

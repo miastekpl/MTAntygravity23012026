@@ -20,7 +20,9 @@ const uint8_t ButtonHandler::patternPins[15] = {
 ButtonHandler::ButtonHandler() {
     btnStartPause = {BTN_START_PAUSE, HIGH, 0, false, PRESS_NONE};
     btnStop = {BTN_STOP, HIGH, 0, false, PRESS_NONE};
-    btnSelector = {ENCODER_SW, HIGH, 0, false, PRESS_NONE};
+    btnSelector = {BTN_SELECTOR, HIGH, 0, false, PRESS_NONE};  // ZMIANA: dedykowany przycisk!
+    btnStartGap = {BTN_START_GAP, HIGH, 0, false, PRESS_NONE};
+    btnReverseP3 = {BTN_REVERSE_P3, HIGH, 0, false, PRESS_NONE};
     
     for (int i = 0; i < 15; i++) {
         btnPatterns[i] = {patternPins[i], HIGH, 0, false, PRESS_NONE};
@@ -35,7 +37,9 @@ void ButtonHandler::begin() {
     // Konfiguracja przycisków sterowania
     pinMode(BTN_START_PAUSE, INPUT_PULLUP);
     pinMode(BTN_STOP, INPUT_PULLUP);
-    pinMode(ENCODER_SW, INPUT_PULLUP);
+    pinMode(BTN_SELECTOR, INPUT_PULLUP);  // ZMIANA: dedykowany przycisk!
+    pinMode(BTN_START_GAP, INPUT_PULLUP);
+    pinMode(BTN_REVERSE_P3, INPUT_PULLUP);
     
     // Konfiguracja przycisków wzorców
     for (int i = 0; i < 15; i++) {
@@ -53,6 +57,8 @@ void ButtonHandler::update() {
     updateButton(btnStartPause);
     updateButton(btnStop);
     updateButton(btnSelector);
+    updateButton(btnStartGap);
+    updateButton(btnReverseP3);
     
     for (int i = 0; i < 15; i++) {
         updateButton(btnPatterns[i]);
@@ -116,6 +122,14 @@ PressType ButtonHandler::getSelectorPress() {
     return getPress(btnSelector);
 }
 
+PressType ButtonHandler::getStartGapPress() {
+    return getPress(btnStartGap);
+}
+
+PressType ButtonHandler::getReverseP3Press() {
+    return getPress(btnReverseP3);
+}
+
 // ============================================================================
 // POBIERANIE I RESETOWANIE STANU PRZYCISKU
 // ============================================================================
@@ -148,6 +162,8 @@ void ButtonHandler::reset() {
     btnStartPause.pressType = PRESS_NONE;
     btnStop.pressType = PRESS_NONE;
     btnSelector.pressType = PRESS_NONE;
+    btnStartGap.pressType = PRESS_NONE;
+    btnReverseP3.pressType = PRESS_NONE;
     
     for (int i = 0; i < 15; i++) {
         btnPatterns[i].pressType = PRESS_NONE;

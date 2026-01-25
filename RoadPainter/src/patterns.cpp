@@ -5,22 +5,25 @@
 // ============================================================================
 
 const Pattern PatternManager::patterns[] = {
+    // NOWE PRZYPISANIE PISTOLETÓW:
+    // P1=bit0, P2=bit1, P3=bit2, P4=bit3, P5=bit4, P6=bit5
+    
     // type, name, description, lineLength_cm, gapLength_cm, width_cm, gunMask, canReverse, isDouble
-    {PATTERN_P1A, "P-1a", "Przerywana długa", 400.0, 800.0, 12.0, 0b00000111, false, false},
-    {PATTERN_P1B, "P-1b", "Przerywana krótka", 200.0, 400.0, 12.0, 0b00000111, false, false},
-    {PATTERN_P1C, "P-1c", "Wydzielająca", 200.0, 200.0, 12.0, 0b00000111, false, false},
-    {PATTERN_P1D, "P-1d", "Prowadząca wąska", 100.0, 100.0, 12.0, 0b00000111, false, false},
-    {PATTERN_P1E, "P-1e", "Prowadząca szeroka", 100.0, 100.0, 24.0, 0b00111111, false, false},
-    {PATTERN_P2A, "P-2a", "Ciągła wąska", 0.0, 0.0, 12.0, 0b00000111, false, false},
-    {PATTERN_P2B, "P-2b", "Ciągła szeroka", 0.0, 0.0, 24.0, 0b00111111, false, false},
-    {PATTERN_P3A, "P-3a", "Przekraczalna długa", 400.0, 200.0, 12.0, 0b00000111, true, false},
-    {PATTERN_P3B, "P-3b", "Przekraczalna krótka", 100.0, 100.0, 12.0, 0b00000111, true, false},
-    {PATTERN_P4, "P-4", "Podwójna ciągła", 0.0, 0.0, 24.0, 0b00111111, false, true},
-    {PATTERN_P6, "P-6", "Ostrzegawcza", 400.0, 200.0, 12.0, 0b00000111, false, false},
-    {PATTERN_P7A, "P-7a", "Krawędziowa przeryw. szer.", 100.0, 100.0, 24.0, 0b00111111, false, false},
-    {PATTERN_P7B, "P-7b", "Krawędziowa ciągła szer.", 0.0, 0.0, 24.0, 0b00111111, false, false},
-    {PATTERN_P7C, "P-7c", "Krawędziowa przeryw. wąska", 100.0, 100.0, 12.0, 0b00000111, false, false},
-    {PATTERN_P7D, "P-7d", "Krawędziowa ciągła wąska", 0.0, 0.0, 12.0, 0b00000111, false, false},
+    {PATTERN_P1A, "P-1a", "Przerywana długa", 400.0, 800.0, 12.0, 0b00000010, false, false},      // P2
+    {PATTERN_P1B, "P-1b", "Przerywana krótka", 200.0, 400.0, 12.0, 0b00000010, false, false},     // P2
+    {PATTERN_P1C, "P-1c", "Wydzielająca", 200.0, 200.0, 12.0, 0b00000010, false, false},          // P2
+    {PATTERN_P1D, "P-1d", "Prowadząca wąska", 100.0, 100.0, 12.0, 0b00000010, false, false},      // P2
+    {PATTERN_P1E, "P-1e", "Prowadząca szeroka", 100.0, 100.0, 24.0, 0b00001000, false, false},    // P4
+    {PATTERN_P2A, "P-2a", "Ciągła wąska", 0.0, 0.0, 12.0, 0b00000010, false, false},              // P2
+    {PATTERN_P2B, "P-2b", "Ciągła szeroka", 0.0, 0.0, 24.0, 0b00001000, false, false},            // P4
+    {PATTERN_P3A, "P-3a", "Przekraczalna długa", 400.0, 200.0, 12.0, 0b00000101, true, false},    // P1+P3
+    {PATTERN_P3B, "P-3b", "Przekraczalna krótka", 100.0, 100.0, 12.0, 0b00000101, true, false},   // P1+P3
+    {PATTERN_P4, "P-4", "Podwójna ciągła", 0.0, 0.0, 24.0, 0b00000101, false, true},              // P1+P3
+    {PATTERN_P6, "P-6", "Ostrzegawcza", 400.0, 200.0, 12.0, 0b00010000, false, false},            // P5
+    {PATTERN_P7A, "P-7a", "Krawędziowa przeryw. szer.", 100.0, 100.0, 24.0, 0b00100000, false, false}, // P6
+    {PATTERN_P7B, "P-7b", "Krawędziowa ciągła szer.", 0.0, 0.0, 24.0, 0b00100000, false, false},  // P6
+    {PATTERN_P7C, "P-7c", "Krawędziowa przeryw. wąska", 100.0, 100.0, 12.0, 0b00010000, false, false}, // P5
+    {PATTERN_P7D, "P-7d", "Krawędziowa ciągła wąska", 0.0, 0.0, 12.0, 0b00010000, false, false},  // P5
 };
 
 // ============================================================================
@@ -30,9 +33,12 @@ const Pattern PatternManager::patterns[] = {
 PatternManager::PatternManager() 
     : currentPattern(PATTERN_NONE)
     , reversed_(false)
+    , startGapEnabled_(false)
+    , startGapDistance_cm(0.0)
     , cyclePosition_cm(0.0)
     , activeGunMask(0)
     , inLinePhase(true)
+    , startGapCompleted_(false)
 {
 }
 
@@ -79,6 +85,38 @@ void PatternManager::setReversed(bool reversed) {
     }
 }
 
+void PatternManager::toggleReversed() {
+    const Pattern* pattern = getCurrentPatternData();
+    if (pattern && pattern->canReverse) {
+        reversed_ = !reversed_;
+        updateGunMask();
+        Serial.printf("PatternManager: Odwrócenie P-3: %s\n", reversed_ ? "TAK" : "NIE");
+    }
+}
+
+// ============================================================================
+// START GAP - ROZPOCZĘCIE OD PRZERWY
+// ============================================================================
+
+void PatternManager::setStartGap(bool enabled) {
+    startGapEnabled_ = enabled;
+    
+    if (enabled) {
+        const Pattern* pattern = getCurrentPatternData();
+        if (pattern && pattern->gapLength_cm > 0.0) {
+            startGapDistance_cm = pattern->gapLength_cm;
+            startGapCompleted_ = false;
+            Serial.printf("PatternManager: Start Gap włączony - przerwa %.0f cm\n", startGapDistance_cm);
+        } else {
+            startGapEnabled_ = false;
+            Serial.println("PatternManager: Wzorzec nie ma przerwy - Start Gap wyłączony");
+        }
+    } else {
+        startGapCompleted_ = false;
+        Serial.println("PatternManager: Start Gap wyłączony");
+    }
+}
+
 // ============================================================================
 // AKTUALIZACJA STANU MALOWANIA
 // ============================================================================
@@ -88,6 +126,21 @@ void PatternManager::update(float distanceCm) {
     if (!pattern) {
         activeGunMask = 0;
         return;
+    }
+    
+    // Obsługa Start Gap - przerwa na początku
+    if (startGapEnabled_ && !startGapCompleted_) {
+        startGapDistance_cm -= distanceCm;
+        
+        if (startGapDistance_cm <= 0.0) {
+            startGapCompleted_ = true;
+            cyclePosition_cm = -startGapDistance_cm;  // Reszta dystansu idzie do cyklu
+            Serial.println("PatternManager: Start Gap ukończony - rozpoczęcie malowania");
+        } else {
+            // Wciąż w przerwie Start Gap - pistolety wyłączone
+            activeGunMask = 0;
+            return;
+        }
     }
     
     // Wzorce ciągłe - zawsze aktywne
@@ -181,6 +234,7 @@ uint8_t PatternManager::getDoubleMask() const {
 void PatternManager::reset() {
     cyclePosition_cm = 0.0;
     inLinePhase = true;
+    startGapCompleted_ = false;  // Reset Start Gap przy zmianie wzorca
     updateGunMask();
 }
 

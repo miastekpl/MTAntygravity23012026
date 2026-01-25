@@ -29,6 +29,9 @@
 // Przyciski sterowania
 #define BTN_START_PAUSE  15
 #define BTN_STOP         16
+#define BTN_SELECTOR     19  // Dedykowany przycisk selektora (nie enkoder!)
+#define BTN_START_GAP    20  // Przycisk Start od przerwy
+#define BTN_REVERSE_P3   37  // Przycisk odwracania P-3a/P-3b
 
 // Przyciski wyboru wzorców (13 wzorców)
 #define BTN_P1A      17
@@ -45,7 +48,7 @@
 #define BTN_P7A      42
 #define BTN_P7B      2
 #define BTN_P7C      3
-#define BTN_P7D      37
+#define BTN_P7D      38
 
 // Przekaźniki (6 pistoletów malarskich)
 #define RELAY_1      35
@@ -94,12 +97,22 @@
 // PARAMETRY MALOWANIA
 // ============================================================================
 
-// Szerokość pojedynczego pistoletu [cm]
-#define SINGLE_GUN_WIDTH_CM    4.0
+// NOWA KONFIGURACJA PISTOLETÓW:
+// P1, P2, P3 - pistolety osi jezdni (12cm każdy)
+// P4 - pistolet osi jezdni (24cm)
+// P5 - pistolet krawędzi (12cm)
+// P6 - pistolet krawędzi (24cm)
 
-// Konfiguracja pistoletów dla różnych szerokości
-// 12cm = 3 pistolety (1, 2, 3)
-// 24cm = 6 pistoletów (wszystkie)
+// Szerokości pistoletów
+#define GUN_P1_WIDTH_CM  12.0
+#define GUN_P2_WIDTH_CM  12.0
+#define GUN_P3_WIDTH_CM  12.0
+#define GUN_P4_WIDTH_CM  24.0
+#define GUN_P5_WIDTH_CM  12.0
+#define GUN_P6_WIDTH_CM  24.0
+
+// Minimalna prędkość do aktywacji pistoletów [km/h]
+#define MIN_SPEED_FOR_PAINTING  2.0
 
 // ============================================================================
 // PAMIĘĆ EEPROM

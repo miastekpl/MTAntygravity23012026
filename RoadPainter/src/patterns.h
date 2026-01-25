@@ -61,7 +61,12 @@ public:
     
     // Odwracanie wzorców P-3a/P-3b
     void setReversed(bool reversed);
+    void toggleReversed();  // Przełączanie odwrócenia
     bool isReversed() const { return reversed_; }
+    
+    // Start Gap - rozpoczęcie od przerwy
+    void setStartGap(bool enabled);
+    bool isStartGapActive() const { return startGapEnabled_; }
     
     // Aktualizacja stanu malowania na podstawie przebytego dystansu
     void update(float distanceCm);
@@ -85,9 +90,12 @@ public:
 private:
     PatternType currentPattern;
     bool reversed_;              // Odwrócenie dla P-3a/P-3b
+    bool startGapEnabled_;       // Czy Start Gap jest włączony
+    float startGapDistance_cm;   // Dystans przerwy dla Start Gap
     float cyclePosition_cm;      // Pozycja w cyklu linia+przerwa [cm]
     uint8_t activeGunMask;       // Aktualna maska aktywnych pistoletów
     bool inLinePhase;            // Czy jesteśmy w fazie malowania linii
+    bool startGapCompleted_;     // Czy przerwa Start Gap została ukończona
     
     // Tablica wszystkich wzorców
     static const Pattern patterns[];

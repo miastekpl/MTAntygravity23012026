@@ -86,13 +86,25 @@ void UIManager::updateWorkScreen() {
     // Aktualizacja wzorca malowania
     if (currentState == STATE_PAINTING) {
         float deltaDist = encoderManager.getDeltaDistance_cm();
-        patternManager.update(deltaDist);
+        float currentSpeed = encoderManager.getSpeed_kmh();
         
-        // Aktualizacja powierzchni
-        totalPaintedArea_m2 += patternManager.calculatePaintedArea(deltaDist);
-        
-        // Aktualizacja przekaźników
-        relayController.setGunMask(patternManager.getActiveGunMask());
+        // ZABEZPIECZENIE: Pistolety aktywne tylko przy ruchu i prędkości >= 2 km/h
+        if (currentSpeed >= MIN_SPEED_FOR_PAINTING && deltaDist > 0.0) {
+            patternManager.update(deltaDist);
+            
+            // Aktualizacja powierzchni
+            totalPaintedArea_m2 += patternManager.calculatePaintedArea(deltaDist);
+            
+            // Aktualizacja przekaźników
+            relayController.setGunMask(patternManager.getActiveGunMask());
+        } else {
+            // Prędkość za niska lub brak ruchu - wyłącz pistolety
+            relayController.allOff();
+            
+            if (currentSpeed < MIN_SPEED_FOR_PAINTING && currentSpeed > 0.1) {
+                Serial.printf("UWAGA: Prędkość za niska (%.1f km/h) - pistolety wyłączone\n", currentSpeed);
+            }
+        }
     } else {
         // Wyłączenie pistoletów gdy nie malujemy
         relayController.allOff();

@@ -100,6 +100,18 @@ void loop() {
         uiManager.handleSelector(selectorPress);
     }
     
+    // Obsługa przycisku Start Gap
+    PressType startGapPress = buttonHandler.getStartGapPress();
+    if (startGapPress == PRESS_SHORT) {
+        patternManager.setStartGap(!patternManager.isStartGapActive());
+    }
+    
+    // Obsługa przycisku odwracania P-3
+    PressType reverseP3Press = buttonHandler.getReverseP3Press();
+    if (reverseP3Press == PRESS_SHORT) {
+        patternManager.toggleReversed();
+    }
+    
     // 4. Obsługa przycisków wzorców
     PatternType selectedPattern = buttonHandler.getPatternButtonPressed();
     if (selectedPattern != PATTERN_NONE) {
