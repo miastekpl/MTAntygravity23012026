@@ -3,6 +3,38 @@
 
 ---
 
+## [1.6.0] - 2026-01-26
+
+### 🔄 System Aktualizacji (OTA)
+
+- ✅ **Web OTA** - Możliwość wgrania pliku `.bin` przez przeglądarkę (`/update`)
+- ✅ **Bezprzewodowy Serwis** - Brak konieczności otwierania obudowy do aktualizacji
+- ✅ **Automatyczny Restart** - System restartuje się po udanej aktualizacji
+
+---
+
+## [1.5.0] - 2026-01-26
+
+### 💾 Część "Czarna Skrzynka" (Data Logger)
+
+- ✅ **Logowanie na SD** - Zapis raportów pracy do plików CSV (`LOG_XXX.CSV`)
+- ✅ **Format Danych** - Timestamp, Event, Wzorzec, Dystans, Powierzchnia, Prędkość
+- ✅ **Zdarzenia** - Rejestracja Start/Stop/Pauza oraz błędów
+- ✅ **Autonomiczność** - Automatyczne tworzenie nowych plików po restarcie
+
+---
+
+## [1.4.0] - 2026-01-26
+
+### 🌐 System Zdalnego Sterowania (IoT)
+
+- ✅ **Web Server "Trassar"** - Access Point WiFi do sterowania ze smartfona
+- ✅ **Dashboard Operatora** - Responsywny interfejs WWW (Prędkość, Dystans, m²)
+- ✅ **Zdalne Sterowanie** - Start/Stop, Wybór wzorca, Start Gap, Reverse P-3 przez telefon
+- ✅ **Monitoring** - Podgląd stanu maszyny w czasie rzeczywistym (AJAX)
+
+---
+
 ## [1.3.0] - 2026-01-25
 
 ### 🚀 Optymalizacje Produkcyjne i Bezpieczeństwo

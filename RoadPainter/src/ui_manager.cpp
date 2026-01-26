@@ -1,5 +1,6 @@
 #include "ui_manager.h"
 #include "relay_controller.h"
+#include "data_logger.h"
 
 // ============================================================================
 // KONSTRUKTOR
@@ -159,6 +160,7 @@ void UIManager::handleStartPause() {
             // Sprawdzenie czy wybrano wzorzec
             if (patternManager.isPatternActive()) {
                 setState(STATE_PAINTING);
+                dataLogger.logEvent("START_PAINTING", patternManager.getPatternName());
                 Serial.println("UIManager: START malowania");
             } else {
                 displayManager.showMessage("BLAD", "Wybierz wzorzec!", COLOR_INACTIVE);
@@ -166,6 +168,10 @@ void UIManager::handleStartPause() {
             break;
             
         case STATE_PAINTING:
+            // Zapisz raport przed pauzą
+            dataLogger.logWork(encoderManager.getDistanceCm(), totalPaintedArea_m2, encoderManager.getSpeed_kmh(), patternManager.getPatternName());
+            dataLogger.logEvent("PAUSE_PAINTING", "Pauza operatora");
+            
             setState(STATE_PAUSED);
             Serial.println("UIManager: PAUZA");
             break;

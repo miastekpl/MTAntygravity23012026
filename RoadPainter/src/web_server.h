@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
+#include <Update.h>
 #include "patterns.h"
 #include "encoder.h"
 #include "ui_manager.h"
@@ -49,8 +50,13 @@ private:
     void handleStartPause();
     void handleStop();
     void handleStartGap();
+    void handleStartGap();
     void handleReverseP3();
     void handleNotFound();
+    
+    // OTA Update
+    void handleUpdate();
+    void handleUpdateUpload();
     
     // Generowanie HTML
     String generateHTML();

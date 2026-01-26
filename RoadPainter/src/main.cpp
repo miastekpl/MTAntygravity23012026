@@ -28,6 +28,8 @@
 #include "ui_manager.h"
 
 #include <esp_task_wdt.h>
+#include "web_server.h"
+#include "data_logger.h"
 
 // ============================================================================
 // SETUP
@@ -43,7 +45,7 @@ void setup() {
     delay(1000);
     
     Serial.println("\n\n========================================");
-    Serial.println("SYSTEM MALOWANIA PASOW DROGOWYCH v1.3.0");
+    Serial.println("SYSTEM MALOWANIA PASOW DROGOWYCH v1.6.0 (FINAL)");
     Serial.println("========================================\n");
     
     // Inicjalizacja komponentów
@@ -66,6 +68,12 @@ void setup() {
     
     // 6. UI Manager
     uiManager.begin();
+    
+    // 7. Serwer WWW
+    webServer.begin();
+    
+    // 8. Logger Danych (SD)
+    dataLogger.begin();
     
     Serial.println("\nSystem gotowy do pracy!");
     Serial.println("========================================\n");
@@ -146,6 +154,9 @@ void loop() {
     
     // 6. Aktualizacja wyświetlacza
     displayManager.update();
+    
+    // 7. Aktualizacja serwera WWW
+    webServer.update();
     
     // Małe opóźnienie dla stabilności (NIE BLOKUJE PĘTLI)
     // Usunięcie delay() na rzecz millis() w przyszłości

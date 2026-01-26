@@ -44,6 +44,13 @@ public:
     SystemState getState() const { return currentState; }
     bool isPainting() const { return currentState == STATE_PAINTING; }
     
+    // Sprawdzanie czy wzorzec jest aktywny
+    bool isPatternActive() const { return patternManager.isPatternActive(); }
+    
+    // Gettery dla WebServer
+    SystemState getState() const { return currentState; }
+    float getTotalArea() const { return totalPaintedArea_m2; }
+    
 private:
     SystemState currentState;
     

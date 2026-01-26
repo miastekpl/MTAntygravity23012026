@@ -26,6 +26,9 @@
 // #define JOYSTICK_VRY  2   // Konflikt z BTN
 // #define JOYSTICK_SW   7   // Konflikt z BTN
 
+// Karta SD (SPI)
+#define SD_CS_PIN        43  // Chip Select dla karty SD
+
 // Przyciski sterowania
 #define BTN_START_PAUSE  15
 #define BTN_STOP         16
