@@ -21,17 +21,18 @@
 #define ENCODER_DT    5
 #define ENCODER_SW    6
 
-// Joystick
-#define JOYSTICK_VRX  1   // ADC1_CH0
-#define JOYSTICK_VRY  2   // ADC1_CH1
-#define JOYSTICK_SW   7
+// Joystick (Zarezerwowane/Nieużywane)
+// #define JOYSTICK_VRX  1   // Konflikt z BTN
+// #define JOYSTICK_VRY  2   // Konflikt z BTN
+// #define JOYSTICK_SW   7   // Konflikt z BTN
 
 // Przyciski sterowania
 #define BTN_START_PAUSE  15
 #define BTN_STOP         16
-#define BTN_SELECTOR     19  // Dedykowany przycisk selektora (nie enkoder!)
+#define BTN_SELECTOR     19  // Dedykowany przycisk selektora
 #define BTN_START_GAP    20  // Przycisk Start od przerwy
 #define BTN_REVERSE_P3   37  // Przycisk odwracania P-3a/P-3b
+#define BTN_EMERGENCY_STOP 6 // Przycisk awaryjny (E-STOP) - dawny SW enkodera
 
 // Przyciski wyboru wzorców (13 wzorców)
 #define BTN_P1A      17
@@ -46,9 +47,9 @@
 #define BTN_P4       40
 #define BTN_P6       41
 #define BTN_P7A      42
-#define BTN_P7B      2
+#define BTN_P7B      2   // Był konflikt z JOYSTICK_VRY
 #define BTN_P7C      3
-#define BTN_P7D      38
+#define BTN_P7D      7   // Zmieniono z 38 (konflikt z P3A) na 7 (dawny JOYSTICK_SW)
 
 // Przekaźniki (6 pistoletów malarskich)
 #define RELAY_1      35
@@ -132,5 +133,24 @@
 
 // Maksymalna prędkość [km/h] (zabezpieczenie)
 #define MAX_SPEED_KMH           30.0
+
+// Watchdog Timer
+#define WDT_TIMEOUT_SECONDS     5      // 5 sekund timeoutu
+
+// ============================================================================
+// DEBUGOWANIE
+// ============================================================================
+
+#define DEBUG_MODE 1  // 1 = włączone, 0 = wyłączone
+
+#if DEBUG_MODE
+    #define DEBUG_PRINT(...) Serial.print(__VA_ARGS__)
+    #define DEBUG_PRINTLN(...) Serial.println(__VA_ARGS__)
+    #define DEBUG_PRINTF(...) Serial.printf(__VA_ARGS__)
+#else
+    #define DEBUG_PRINT(...)
+    #define DEBUG_PRINTLN(...)
+    #define DEBUG_PRINTF(...)
+#endif
 
 #endif // CONFIG_H

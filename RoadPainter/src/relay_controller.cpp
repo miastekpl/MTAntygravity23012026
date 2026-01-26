@@ -38,8 +38,12 @@ void RelayController::begin() {
 // ============================================================================
 
 void RelayController::setGunMask(uint8_t mask) {
-    currentMask = mask & 0b00111111;  // Tylko 6 bitów
-    updateRelays();
+    mask &= 0b00111111; // Tylko 6 bitów
+    
+    if (currentMask != mask) {
+        currentMask = mask;
+        updateRelays();
+    }
 }
 
 // ============================================================================

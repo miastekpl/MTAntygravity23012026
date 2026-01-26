@@ -27,17 +27,23 @@
 #include "display.h"
 #include "ui_manager.h"
 
+#include <esp_task_wdt.h>
+
 // ============================================================================
 // SETUP
 // ============================================================================
 
 void setup() {
+    // Inicjalizacja WDT (Watchdog Timer) - zabezpieczenie przed zawieszeniem
+    esp_task_wdt_init(WDT_TIMEOUT_SECONDS, true);
+    esp_task_wdt_add(NULL);  // Dodaj bieżący wątek (loop) do WDT
+    
     // Inicjalizacja komunikacji szeregowej
     Serial.begin(115200);
     delay(1000);
     
     Serial.println("\n\n========================================");
-    Serial.println("SYSTEM MALOWANIA PASOW DROGOWYCH v1.0.0");
+    Serial.println("SYSTEM MALOWANIA PASOW DROGOWYCH v1.3.0");
     Serial.println("========================================\n");
     
     // Inicjalizacja komponentów
@@ -69,8 +75,8 @@ void setup() {
         displayManager.showMessage("UWAGA", "Wymagana kalibracja!", COLOR_WARNING);
     }
     
-    // Test przekaźników (opcjonalny - zakomentuj jeśli niepotrzebny)
-    // relayController.testSequence();
+    // Konfiguracja pinu E-STOP
+    pinMode(BTN_EMERGENCY_STOP, INPUT_PULLUP);
 }
 
 // ============================================================================
@@ -78,6 +84,23 @@ void setup() {
 // ============================================================================
 
 void loop() {
+    // 0. Emergency Stop - Najwyższy priorytet
+    if (digitalRead(BTN_EMERGENCY_STOP) == LOW) {
+        relayController.allOff();
+        displayManager.showMessage("E-STOP", "ZATRZYMANIE AWARYJNE!", COLOR_INACTIVE);
+        Serial.println("!!! E-STOP ACTIVATED !!!");
+        
+        // Pętla blokująca z obsługą WDT, wyjście tylko po resecie zasilania
+        while (true) {
+            esp_task_wdt_reset();
+            relayController.allOff(); // Dla pewności ciągłe wymuszanie OFF
+            delay(100);
+        }
+    }
+
+    // Resetuj Watchdog Timer
+    esp_task_wdt_reset();
+    
     // 1. Aktualizacja enkodera (pomiar dystansu i prędkości)
     encoderManager.update();
     
@@ -124,6 +147,7 @@ void loop() {
     // 6. Aktualizacja wyświetlacza
     displayManager.update();
     
-    // Małe opóźnienie dla stabilności
-    delay(10);
+    // Małe opóźnienie dla stabilności (NIE BLOKUJE PĘTLI)
+    // Usunięcie delay() na rzecz millis() w przyszłości
+    delay(5); 
 }

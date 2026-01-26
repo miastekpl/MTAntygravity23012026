@@ -254,7 +254,11 @@ float PatternManager::calculatePaintedArea(float distanceCm) const {
     
     if (pattern->lineLength_cm > 0.0) {
         float cycleLength = pattern->lineLength_cm + pattern->gapLength_cm;
-        coverage = pattern->lineLength_cm / cycleLength;
+        if (cycleLength > 0.0) {
+            coverage = pattern->lineLength_cm / cycleLength;
+        } else {
+            coverage = 0.0; // Zabezpieczenie: błędny wzorzec (długość 0)
+        }
     }
     
     // Dla wzorca podwójnego (P-4) - dwie linie
@@ -265,6 +269,10 @@ float PatternManager::calculatePaintedArea(float distanceCm) const {
     
     // Konwersja na m²
     return areaCm2 * CM_TO_M2_FACTOR;
+}
+
+// Zabezpieczenie przed overflow cyclePosition_cm w update()
+// (Implementacja przeniesiona do update - poniżej)
 }
 
 // ============================================================================

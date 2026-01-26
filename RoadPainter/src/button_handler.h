@@ -26,6 +26,7 @@ struct Button {
     unsigned long pressStartTime;
     bool pressed;
     PressType pressType;
+    unsigned long lastDebounceTime; // Dodane dla non-blocking debounce
 };
 
 // ============================================================================

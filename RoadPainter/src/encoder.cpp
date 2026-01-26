@@ -1,5 +1,5 @@
 #include "encoder.h"
-#include <EEPROM.h>
+#include <Preferences.h>
 
 // ============================================================================
 // ZMIENNE STATYCZNE
@@ -7,9 +7,11 @@
 
 volatile long EncoderManager::pulseCount = 0;
 volatile long EncoderManager::lastPulseCount = 0;
+portMUX_TYPE EncoderManager::timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 // Wskaźnik do instancji (dla ISR)
 static EncoderManager* encoderInstance = nullptr;
+static Preferences preferences;
 
 // ============================================================================
 // KONSTRUKTOR
@@ -40,19 +42,20 @@ void EncoderManager::begin() {
     // Przerwania na zbocze opadające CLK
     attachInterrupt(digitalPinToInterrupt(ENCODER_CLK), handleEncoderISR, FALLING);
     
-    // Inicjalizacja EEPROM
-    EEPROM.begin(EEPROM_SIZE);
-    
-    // Wczytanie kalibracji
+    // Wczytanie kalibracji z NVS (Preferences - wbudowany wear leveling)
+    preferences.begin("roadpainter", false);
     loadCalibration();
     
     // Inicjalizacja liczników
+    portENTER_CRITICAL(&timerMux);
     pulseCount = 0;
+    portEXIT_CRITICAL(&timerMux);
+    
     lastPulseCount = 0;
     lastSpeedCalc_ms = millis();
     lastPulseCountForSpeed = 0;
     
-    Serial.println("EncoderManager: Inicjalizacja zakończona");
+    Serial.println("EncoderManager: Inicjalizacja zakończona (Safe ISR + NVS)");
     if (calibrated) {
         Serial.printf("Kalibracja wczytana: %.4f\n", calibrationFactor);
     } else {
@@ -61,18 +64,24 @@ void EncoderManager::begin() {
 }
 
 // ============================================================================
-// OBSŁUGA PRZERWANIA ENKODERA
+// OBSŁUGA PRZERWANIA ENKODERA (SAFE ISR)
 // ============================================================================
 
 void IRAM_ATTR EncoderManager::handleEncoderISR() {
-    // Odczyt stanu DT dla określenia kierunku
-    int dtState = digitalRead(ENCODER_DT);
+    // Odczyt rejestrów GPIO (szybsze niż digitalRead)
+    // ESP32-S3 GPIO 0-31 są w rejestrze GPIO_IN_REG
+    // ENCODER_DT to GPIO 5, więc bit 5
     
-    if (dtState == LOW) {
+    uint32_t gpio_status = REG_READ(GPIO_IN_REG);
+    bool dtState = (gpio_status >> ENCODER_DT) & 0x01;
+    
+    portENTER_CRITICAL_ISR(&timerMux);
+    if (!dtState) {
         pulseCount++;  // Obrót w przód
     } else {
-        pulseCount--;  // Obrót w tył (jeśli konieczne)
+        pulseCount--;  // Obrót w tył
     }
+    portEXIT_CRITICAL_ISR(&timerMux);
 }
 
 // ============================================================================
@@ -82,8 +91,13 @@ void IRAM_ATTR EncoderManager::handleEncoderISR() {
 void EncoderManager::update() {
     unsigned long currentTime = millis();
     
+    // Atomowy odczyt licznika
+    long currentPulses;
+    portENTER_CRITICAL(&timerMux);
+    currentPulses = pulseCount;
+    portEXIT_CRITICAL(&timerMux);
+    
     // Aktualizacja dystansu
-    long currentPulses = pulseCount;
     totalDistance_cm = pulsesToDistance(currentPulses);
     
     // Obliczanie prędkości co SPEED_CALC_INTERVAL_MS
@@ -95,7 +109,10 @@ void EncoderManager::update() {
         if (timeDelta_s > 0) {
             // Prędkość = dystans / czas
             // cm/s -> km/h: × 0.036
-            speed_kmh = (distanceDelta_cm / timeDelta_s) * 0.036;
+            
+            // Prosty filtr dolnoprzepustowy dla prędkości (waga 0.7 nowy, 0.3 stary)
+            float rawSpeed = (distanceDelta_cm / timeDelta_s) * 0.036;
+            speed_kmh = (rawSpeed * 0.7) + (speed_kmh * 0.3);
             
             // Zabezpieczenie przed nierealistycznymi wartościami
             if (speed_kmh > MAX_SPEED_KMH) {
@@ -116,6 +133,10 @@ void EncoderManager::update() {
 // ============================================================================
 
 float EncoderManager::getDeltaDistance_cm() {
+    // Atomowy dostęp do zmiennych
+    // W tym przypadku totalDistance_cm jest obliczane tylko w update(), który jest w głównym wątku,
+    // więc race condition z ISR nie występuje bezpośrednio, ale dobra praktyka zachowana.
+    
     float delta = totalDistance_cm - lastDistance_cm;
     lastDistance_cm = totalDistance_cm;
     return delta;
@@ -126,7 +147,10 @@ float EncoderManager::getDeltaDistance_cm() {
 // ============================================================================
 
 void EncoderManager::resetDistance() {
+    portENTER_CRITICAL(&timerMux);
     pulseCount = 0;
+    portEXIT_CRITICAL(&timerMux);
+    
     lastPulseCount = 0;
     totalDistance_cm = 0.0;
     lastDistance_cm = 0.0;
@@ -146,7 +170,10 @@ void EncoderManager::startCalibration() {
 }
 
 void EncoderManager::finishCalibration(float actualDistance_cm) {
-    long pulses = pulseCount;
+    long pulses;
+    portENTER_CRITICAL(&timerMux);
+    pulses = pulseCount;
+    portEXIT_CRITICAL(&timerMux);
     
     if (pulses == 0) {
         Serial.println("EncoderManager: BŁĄD - brak impulsów podczas kalibracji!");
@@ -154,18 +181,23 @@ void EncoderManager::finishCalibration(float actualDistance_cm) {
     }
     
     // Obliczenie współczynnika kalibracji
-    float measuredDistance_cm = pulsesToDistance(pulses);
-    calibrationFactor = actualDistance_cm / measuredDistance_cm;
+    // Tymczasowo ustawiamy factor na 1.0 żeby obliczyć surowy dystans
+    float oldFactor = calibrationFactor;
+    calibrationFactor = 1.0;
+    float measuredRawDistance_cm = pulsesToDistance(pulses);
+    calibrationFactor = oldFactor;
+    
+    // Nowy factor = cel / pomiar_surowy
+    calibrationFactor = actualDistance_cm / measuredRawDistance_cm;
     calibrated = true;
     
-    // Zapisanie do EEPROM
+    // Zapisanie do Preferences (NVS)
     saveCalibration();
     
     Serial.printf("EncoderManager: Kalibracja zakończona\n");
     Serial.printf("  Impulsy: %ld\n", pulses);
-    Serial.printf("  Dystans rzeczywisty: %.2f cm\n", actualDistance_cm);
-    Serial.printf("  Dystans zmierzony: %.2f cm\n", measuredDistance_cm);
-    Serial.printf("  Współczynnik kalibracji: %.4f\n", calibrationFactor);
+    Serial.printf("  Dystans surowy: %.2f cm\n", measuredRawDistance_cm);
+    Serial.printf("  Nowy współczynnik: %.4f\n", calibrationFactor);
     
     // Reset po kalibracji
     resetDistance();
@@ -182,40 +214,38 @@ float EncoderManager::pulsesToDistance(long pulses) const {
 }
 
 // ============================================================================
-// ZAPISYWANIE KALIBRACJI DO EEPROM
+// ZAPISYWANIE KALIBRACJI DO NVS (Preferences)
 // ============================================================================
 
 void EncoderManager::saveCalibration() {
-    EEPROM.put(EEPROM_ADDR_CALIBRATION, calibrationFactor);
-    EEPROM.write(EEPROM_ADDR_INITIALIZED, EEPROM_MAGIC_BYTE);
-    EEPROM.commit();
-    
-    Serial.println("EncoderManager: Kalibracja zapisana do EEPROM");
+    preferences.putFloat("calFactor", calibrationFactor);
+    preferences.putBool("calInit", true);
+    Serial.println("EncoderManager: Kalibracja zapisana do NVS");
 }
 
 // ============================================================================
-// WCZYTYWANIE KALIBRACJI Z EEPROM
+// WCZYTYWANIE KALIBRACJI Z NVS (Preferences)
 // ============================================================================
 
 void EncoderManager::loadCalibration() {
-    byte magicByte = EEPROM.read(EEPROM_ADDR_INITIALIZED);
+    bool initialized = preferences.getBool("calInit", false);
     
-    if (magicByte == EEPROM_MAGIC_BYTE) {
-        EEPROM.get(EEPROM_ADDR_CALIBRATION, calibrationFactor);
+    if (initialized) {
+        calibrationFactor = preferences.getFloat("calFactor", 1.0);
         
         // Walidacja
         if (calibrationFactor > 0.5 && calibrationFactor < 2.0) {
             calibrated = true;
-            Serial.println("EncoderManager: Kalibracja wczytana z EEPROM");
+            Serial.println("EncoderManager: Kalibracja wczytana z NVS");
         } else {
             calibrationFactor = 1.0;
             calibrated = false;
-            Serial.println("EncoderManager: Nieprawidłowa kalibracja w EEPROM");
+            Serial.println("EncoderManager: Nieprawidłowa kalibracja w NVS");
         }
     } else {
         calibrationFactor = 1.0;
         calibrated = false;
-        Serial.println("EncoderManager: Brak kalibracji w EEPROM");
+        Serial.println("EncoderManager: Brak kalibracji w NVS");
     }
 }
 

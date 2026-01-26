@@ -43,6 +43,7 @@ private:
     // Licznik impulsów (volatile - modyfikowany w ISR)
     static volatile long pulseCount;
     static volatile long lastPulseCount;
+    static portMUX_TYPE timerMux;  // Mutex dla sekcji krytycznych
     
     // Dane pomiarowe
     float totalDistance_cm;

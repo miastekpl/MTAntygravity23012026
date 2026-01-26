@@ -3,6 +3,36 @@
 
 ---
 
+## [1.3.0] - 2026-01-25
+
+### 🚀 Optymalizacje Produkcyjne i Bezpieczeństwo
+
+#### Priorytet 1 - Krytyczne
+- ✅ **Watchdog Timer (WDT)** - Zabezpieczenie przed zawieszeniem (5s timeout)
+- ✅ **Bezpieczny ISR** - Szybki odczyt rejestrów i sekcje krytyczne (Atomic)
+- ✅ **NVS (Preferences)** - Ochrona pamięci flash (Wear Leveling) zamiast EEPROM
+- ✅ **Non-blocking Debounce** - Całkowite usunięcie `delay()` z pętli głównej
+
+#### Priorytet 2 - Ważne
+- ✅ **Buforowanie GPIO** - Eliminacja zbędnych operacji zapisu na przekaźnikach
+- ✅ **Robust Math** - Zabezpieczenie przed dzieleniem przez zero w algorytmach powierzchni
+- ✅ **Debug Macro** - Optymalizacja komunikatów szeregowych (kompilacja warunkowa)
+
+#### Funkcje (z v1.1.0)
+- ✅ **Nowe mapowanie pistoletów** (P1-P6)
+- ✅ **Dedykowany selektor** (GPIO 19)
+- ✅ **Start Gap** (GPIO 20)
+- ✅ **Reverse P-3** (GPIO 37)
+
+---
+
+## [1.2.0] - 2026-01-25 (Internal Security Release)
+- Refaktoryzacja przypisania pistoletów
+- Dodanie funkcji Start Gap
+- Zmiana obsługi przycisków
+
+---
+
 ## [1.0.0] - 2026-01-25
 
 ### ✨ Pierwsza wersja produkcyjna

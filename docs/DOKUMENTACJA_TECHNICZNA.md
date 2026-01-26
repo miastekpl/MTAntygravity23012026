@@ -82,84 +82,57 @@ Dla wzorca P-4 (podwójny): `area_m2 *= 2`
 
 ### 2.2 Encoder Manager (`encoder.h/cpp`)
 
-#### Obsługa przerwań:
+#### Obsługa przerwań (Safe ISR):
+
+Implementacja wykorzystuje bezpośredni odczyt rejestrów GPIO dla minimalizacji czasu przebywania w przerwaniu oraz sekcje krytyczne dla atomowości operacji na licznikach.
 
 ```cpp
-void IRAM_ATTR handleEncoderISR() {
-    int dtState = digitalRead(ENCODER_DT);
-    if (dtState == LOW) {
-        pulseCount++;  // Obrót w przód
-    } else {
-        pulseCount--;  // Obrót w tył
-    }
+void IRAM_ATTR EncoderManager::handleEncoderISR() {
+    uint32_t gpio_status = REG_READ(GPIO_IN_REG);  // Szybki odczyt
+    portENTER_CRITICAL_ISR(&timerMux);             // Sekcja krytyczna
+    // ... logika zliczania ...
+    portEXIT_CRITICAL_ISR(&timerMux);
 }
 ```
 
-#### Przeliczanie dystansu:
+#### Pamięć trwała (NVS):
 
-```cpp
-float distance_cm = (pulses / PULSES_PER_REV) 
-                    * WHEEL_CIRCUMFERENCE_MM 
-                    / 10.0 
-                    * calibrationFactor;
-```
-
-Gdzie:
-- `PULSES_PER_REV = 20` (KY-040)
-- `WHEEL_CIRCUMFERENCE_MM = π × 100mm`
-- `calibrationFactor` - z EEPROM (domyślnie 1.0)
-
-#### Obliczanie prędkości:
-
-```cpp
-float speed_kmh = (deltaDist_cm / deltaTime_s) * 0.036;
-```
-
-Przelicznik: cm/s → km/h = × 3.6 / 100 = × 0.036
+Zamiast surowego EEPROM, system używa biblioteki `Preferences` opartej na NVS (Non-Volatile Storage), co zapewnia:
+- Wear leveling (równomierne zużycie pamięci flash)
+- Ochronę przed uszkodzeniem danych przy zaniku zasilania
+- Klucz-wartość zamiast sztywnych adresów
 
 ---
 
 ### 2.3 Relay Controller (`relay_controller.h/cpp`)
 
-#### Maska pistoletów:
+#### Maska pistoletów (Nowa konfiguracja):
 
-```
-Bit:  5  4  3  2  1  0
-Gun:  6  5  4  3  2  1
-```
-
-Przykłady:
-- `0b00000111` = Pistolety 1,2,3 (12cm lewa)
-- `0b00111000` = Pistolety 4,5,6 (12cm prawa)
-- `0b00111111` = Wszystkie (24cm)
-
-#### Wzorzec P-4 (podwójna ciągła):
-
-```
-[1][2][3]  odstęp  [4][5][6]
-├─12cm─┤           ├─12cm─┤
-```
-
-Maska: `0b00111111`
+| Bit | Pistolet | Funkcja | Szerokość |
+|-----|----------|---------|-----------|
+| 0 | P1 | Oś jezdni (Lewy) | 12 cm |
+| 1 | P2 | Oś jezdni | 12 cm |
+| 2 | P3 | Oś jezdni (Prawy) | 12 cm |
+| 3 | P4 | Oś jezdni (Szeroki) | 24 cm |
+| 4 | P5 | Krawędź (Wąski) | 12 cm |
+| 5 | P6 | Krawędź (Szeroki) | 24 cm |
 
 ---
 
 ### 2.4 Button Handler (`button_handler.h/cpp`)
 
-#### Detekcja typu naciśnięcia:
+#### Non-blocking Debounce:
 
-```cpp
-if (pressDuration >= 2000ms) → PRESS_VERY_LONG
-else if (pressDuration >= 1000ms) → PRESS_LONG
-else → PRESS_SHORT
-```
+Obsługa przycisków została przepisana na maszynę stanów opartą na `millis()`, eliminując blokujące funkcje `delay()`. Dzięki temu system reaguje natychmiastowo na zmiany stanów maszyny nawet podczas drgania styków.
 
-#### Debouncing:
+---
 
-```cpp
-delay(DEBOUNCE_MS);  // 50ms
-currentState = digitalRead(pin);
-```
+### 2.5 Watchdog Timer (WDT)
+
+System wykorzystuje hardware'owy Watchdog Timer (WDT) skonfigurowany na 5 sekund.
+- Inicjalizacja w `setup()`
+- Resetowanie (karmienie) w każdej iteracji `loop()`
+- Zabezpiecza przed zawieszeniem systemu (np. pętla nieskończona, deadlock) - w takim przypadku nastąpi automatyczny reset, wyłączając pistolety (dzięki domyślnym stanom GPIO).
 
 ---
 
