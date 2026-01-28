@@ -1,272 +1,108 @@
-# INSTRUKCJA OBSŁUGI
-## System Malowania Pasów Drogowych v1.0.0
+# INSTRUKCJA OBSŁUGI - SYSTEM TRASSAR v1.6.0
+## Inteligentny System Sterowania Malowarką Drogową
 
 ---
 
-## 1. WPROWADZENIE
+## 🏗️ Wstęp
+Gratulujemy wyboru systemu sterowania **Trassar v1.6.0**. Jest to rozwiązanie klasy przemysłowej (Industrial Grade), zaprojektowane z myślą o niezawodności, precyzji i bezpieczeństwie operatora.
 
-System automatycznego malowania pasów drogowych to zaawansowane urządzenie sterowane mikrokontro lerem ESP32-S3, przeznaczone do precyzyjnego nakładania 15 różnych wzorców zgodnych z polskimi normami drogowymi.
-
-### Główne funkcje:
-- ✅ 15 wzorców malowania (P-1a do P-7d)
-- ✅ Kalibracja enkodera dla precyzyjnego pomiaru
-- ✅ Pomiar dystansu z dokładnością 1cm
-- ✅ Zmiana wzorców podczas pracy
-- ✅ Automatyczne liczenie wymalowanych m²
-- ✅ Wyświetlacz kolorowy 320x240 pikseli
+### Główne Funkcje:
+- **15 Wzorców** zgodnych z polskimi normami (P-1, P-2, P-3, P-4, P-6, P-7).
+- **Zdalne Sterowanie (IoT)**: Pełna kontrola ze smartfona/tabletu przez WiFi.
+- **Czarna Skrzynka**: Rejestracja pracy na karcie SD (raporty dla inwestora).
+- **Bezpieczeństwo**: Sprzętowy wyłącznik E-STOP i Watchdog Timer.
+- **Precyzja**: Pomiar dystansu z dokładnością enkodera.
 
 ---
 
-## 2. PANEL STEROWANIA
+## 🚀 Pierwsze Uruchomienie
 
-### Przyciski sterowania:
-- **START/PAUZA** - rozpoczęcie/wstrzymanie malowania
-- **STOP** - zatrzymanie pracy / wejście do menu
-- **SELEKTOR** - nawigacja w menu
+### 1. Zasilanie
+System uruchamia się automatycznie po podaniu zasilania.
+- Ekran powitalny wyświetli wersję oprogramowania (v1.6.0).
+- Po 2 sekundach pojawi się **Ekran Główny**.
 
-### Przyciski wzorców (15 sztuk):
-- **P-1a** do **P-1e** - wzorce przerywane
-- **P-2a**, **P-2b** - wzorce ciągłe
-- **P-3a**, **P-3b** - wzorce przekraczalne
-- **P-4** - podwójna ciągła
-- **P-6** - ostrzegawcza
-- **P-7a** do **P-7d** - krawędziowe
-
-### Wyświetlacz:
-Ekran główny pokazuje:
-- **Lewy górny róg**: Symbol wybranego wzorca
-- **Prawy górny róg**: Prędkość pojazdu [km/h]
-- **Środek**: Wymalowane m²
-- **Dół**: Status (MALOWANIE / PAUZA)
+### 2. Kalibracja Enkodera (Wymagane przy pierwszym razie)
+Jeśli na ekranie miga komunikat **"WYMAGANA KALIBRACJA!"**:
+1. Upewnij się, że maszyna stoi w miejscu startu (oznacz linię na asfalcie).
+2. Przytrzymaj przycisk **STOP** (3 sekundy) aby wejść do MENU.
+3. Wybierz opcję **KALIBRACJA** używając przycisków wzorców (Góra/Dół) lub Selektora.
+4. Potwierdź Selektorem.
+5. Przejedź dokładnie **10 metrów** (użyj taśmy mierniczej).
+6. Zatrzymaj się i naciśnij **Selektor**.
+7. System zapamięta ustawienia na zawsze (technologia NVS).
 
 ---
 
-## 3. PIERWSZE URUCHOMIENIE
+## 📱 Zdalne Sterowanie (Web Dashboard)
 
-### Krok 1: Kalibracja enkodera (OBOWIĄZKOWA!)
+System tworzy własną sieć WiFi, umożliwiając sterowanie z kabiny pojazdu.
 
-> [!IMPORTANT]
-> Kalibracja musi być wykonana przed pierwszym użyciem systemu!
+### Jak się połączyć?
+1. Weź Swój smartfon lub tablet.
+2. Włącz WiFi i wyszukaj sieć: **Trassar**.
+3. Hasło: **12345678**.
+4. W przeglądarce wpisz adres: `192.168.4.1`.
 
-1. Przytrzymaj przycisk **STOP** przez **1 sekundę**
-2. Wybierz **"Kalibracja"** selektorem (krótkie naciśnięcia)
-3. Potwierdź długim naciśnięciem selektora
-4. Naciśnij **START**
-5. **Przejedź dokładnie 10 metrów** (zmierz taśmą mierniczą)
-6. Zatrzymaj się i naciśnij **START** ponownie
-7. System zapisze kalibrację automatycznie
+### Funkcje Dashboardu:
+- **Status Na Żywo**: Prędkość malowania, przebyty dystans, ilość m² farby.
+- **Wielkie Przyciski**: START / PAUZA / STOP (łatwe trafienie palcem).
+- **Wybór Wzorca**: Lista wszystkich 15 wzorców. Kliknij, aby zmienić.
+- **Funkcje Specjalne**:
+  - `START GAP` - Rozpocznij malowanie od przerwy (przydatne przy odświeżaniu).
+  - `ODWRÓĆ P-3` - Zamień linię ciągłą z przerywaną stronami.
 
-✅ Kalibracja jest zapisywana w pamięci i nie wymaga powtarzania
-
----
-
-## 4. PODSTAWOWA OBSŁUGA
-
-### Rozpoczęcie malowania:
-
-1. **Wybierz wzorzec** - naciśnij jeden z 15 przycisków wzorców
-   - Na wyświetlaczu pojawi się nazwa wzorca (np. "P-1a")
-   
-2. **Rozpocznij malowanie** - naciśnij **START/PAUZA**
-   - Status zmieni się na ">>> MALOWANIE <<<"
-   - Pistolety malarskie włączą się automatycznie
-   
-3. **Jedź z odpowiednią prędkością**
-   - Prędkość wyświetlana na ekranie
-   - Zalecana prędkość: 3-8 km/h
-   
-4. **Obserwuj licznik m²**
-   - System automatycznie liczy wymalowaną powierzchnię
-
-### Pauza w pracy:
-
-- Naciśnij **START/PAUZA** - malowanie zostanie wstrzymane
-- Pistolety wyłączą się automatycznie
-- Ponowne naciśnięcie **START/PAUZA** wznowi pracę
-
-### Zatrzymanie:
-
-- Naciśnij krótko **STOP** - zatrzymanie malowania
-- Licznik m² zostanie zachowany
+### ⚠️ Aktualizacja Systemu (OTA)
+Aby zaktualizować oprogramowanie bez kabla:
+1. Wejdź na adres: `192.168.4.1/update`.
+2. Wybierz plik `firmware.bin` (dostarczony przez producenta).
+3. Kliknij "Update". System zrestartuje się po zakończeniu.
 
 ---
 
-## 5. ZMIANA WZORCA "W LOCIE"
+## 💾 Raporty Pracy (Karta SD)
 
-> [!TIP]
-> Możesz zmienić wzorzec podczas malowania bez zatrzymywania!
+System automatycznie zapisuje historię pracy na karcie SD w formacie CSV (Excel).
+Karta znajduje się w slocie obok wyświetlacza.
 
-1. Podczas malowania naciśnij przycisk **nowego wzorca**
-2. System natychmiast przełączy się na nowy wzorzec
-3. Malowanie kontynuowane bez przerwy
+### Struktura Pliku (LOG_XXX.CSV):
+| Czas (ms) | Zdarzenie | Wzorzec | Dystans (m) | Powierzchnia (m²) | Prędkość (km/h) |
+|-----------|-----------|---------|:-----------:|:-----------------:|:---------------:|
+| 105420 | START_WORK | P-1a | 0.00 | 0.000 | 0.0 |
+| 125500 | LOG_WORK | P-1a | 50.50 | 0.606 | 4.2 |
+| 145000 | STOP_WORK | P-1a | 100.00 | 1.212 | 0.0 |
 
-**Przykład**: Malujesz wzorcem P-4, naciśnij przycisk P-3b → natychmiastowa zmiana
-
----
-
-## 6. WZORCE PRZEKRACZALNE (P-3a, P-3b)
-
-Wzorce P-3a i P-3b mają specjalną funkcję **odwracania**:
-
-- **Normalnie**: Linia ciągła po lewej, przerywana po prawej
-- **Po odwróceniu**: Linia ciągła po prawej, przerywana po lewej
-
-### Jak odwrócić:
-1. Wybierz wzorzec P-3a lub P-3b
-2. Wejdź do **MENU** → **Ustawienia**
-3. Wybierz **"Odwróć P-3"**
-4. Potwierdź selektorem
+**Wskazówka:** Pliki są automatycznie numerowane (`LOG_1.CSV`, `LOG_2.CSV`...), więc nie nadpiszesz starych danych. Możesz oddać kartę SD inwestorowi jako dowód wykonania zlecenia.
 
 ---
 
-## 7. POMIAR DYSTANSU
+## 🚧 Sytuacje Awaryjne
 
-Funkcja pomiaru pozwala zmierzyć dokładny dystans przejazdu.
+### Użycie E-STOP
+W przypadku zagrożenia (np. wyciek farby, wtargnięcie pieszego):
+1. Uderz w czerwony przycisk **"Grzybek"** (E-STOP).
+2. **Efekt Natychmiastowy**: Wszystkie pistolety zostaną zamknięte sprzętowo. Zasilanie elektrozaworów zostanie odcięte.
+3. System wyświetli czerwony ekran "E-STOP ZATRZYMANIE AWARYJNE".
 
-### Procedura:
-
-1. Przytrzymaj **STOP** przez 1 sekundę (wejście do menu)
-2. Wybierz **"Pomiar dystansu"**
-3. Potwierdź długim naciśnięciem selektora
-4. Naciśnij **START** - pomiar rozpocznie się
-5. Jedź dowolny dystans
-6. Zatrzymaj się - na ekranie zobaczysz dokładny dystans w metrach
-
-**Dokładność**: ±1 cm
-
-### Wyjście z pomiaru:
-- Przytrzymaj **STOP** przez **2 sekundy**
+### Reset po awarii
+Aby wznowić pracę:
+1. Odblokuj przycisk grzybka (przekręć).
+2. Wyłącz i włącz zasilanie sterownika "Trassar" (wymagany pełny restart dla bezpieczeństwa).
 
 ---
 
-## 8. MENU SYSTEMOWE
+## 🔧 Rozwiązywanie Problemów
 
-### Wejście do menu:
-- Przytrzymaj **STOP** przez **1 sekundę** (tylko gdy nie malujesz)
-
-### Pozycje menu:
-
-#### 📏 Kalibracja
-- Kalibracja enkodera (10 metrów)
-- Wymagana przy pierwszym uruchomieniu
-
-#### 📐 Pomiar dystansu
-- Precyzyjny pomiar przejazdu
-- Dokładność 1 cm
-
-#### ⚙️ Ustawienia
-- Odwracanie wzorców P-3
-- Inne ustawienia (w przygotowaniu)
-
-#### ↩️ Powrót
-- Powrót do ekranu głównego
-
-### Nawigacja w menu:
-- **Krótkie naciśnięcie selektora** - przejście do następnej pozycji
-- **Długie naciśnięcie selektora** - wybór pozycji
-- **Przytrzymanie STOP (2s)** - wyjście do ekranu głównego
+| Objaw | Przyczyna | Rozwiązanie |
+|-------|-----------|-------------|
+| **Ekran nie świeci** | Brak zasilania 5V | Sprawdź przetwornicę i bezpiecznik. |
+| **Prędkość skacze** | Luźne koło/enkoder | Dokręć mocowanie enkodera do koła. |
+| **Brak WiFi "Trassar"** | Antena zasłonięta | Wyprowadź antenę ESP32 poza metalową obudowę. |
+| **Brak logów SD** | Karta pełna/błąd | Sformatuj kartę SD (FAT32) i włóż ponownie. |
+| **Pistolety nie strzelają** | Zasilanie 12V | Sprawdź bezpiecznik na linii zasilania elektrozaworów. |
 
 ---
 
-## 9. TABELA WZORCÓW
-
-| Wzorzec | Linia (m) | Przerwa (m) | Szerokość (cm) | Opis |
-|---------|-----------|-------------|----------------|------|
-| **P-1a** | 4.0 | 8.0 | 12 | Przerywana długa |
-| **P-1b** | 2.0 | 4.0 | 12 | Przerywana krótka |
-| **P-1c** | 2.0 | 2.0 | 12 | Wydzielająca |
-| **P-1d** | 1.0 | 1.0 | 12 | Prowadząca wąska |
-| **P-1e** | 1.0 | 1.0 | 24 | Prowadząca szeroka |
-| **P-2a** | Ciągła | - | 12 | Ciągła wąska |
-| **P-2b** | Ciągła | - | 24 | Ciągła szeroka |
-| **P-3a** | 4.0 | 2.0 | 12 | Przekraczalna długa* |
-| **P-3b** | 1.0 | 1.0 | 12 | Przekraczalna krótka* |
-| **P-4** | Ciągła | - | 24 | Podwójna ciągła* |
-| **P-6** | 4.0 | 2.0 | 12 | Ostrzegawcza |
-| **P-7a** | 1.0 | 1.0 | 24 | Krawędziowa przeryw. szer. |
-| **P-7b** | Ciągła | - | 24 | Krawędziowa ciągła szer. |
-| **P-7c** | 1.0 | 1.0 | 12 | Krawędziowa przeryw. wąska |
-| **P-7d** | Ciągła | - | 12 | Krawędziowa ciągła wąska |
-
-*Wzorce specjalne - patrz sekcje powyżej
-
----
-
-## 10. ROZWIĄZYWANIE PROBLEMÓW
-
-### ⚠️ "Wymagana kalibracja"
-**Przyczyna**: Enkoder nie został skalibrowany  
-**Rozwiązanie**: Wykonaj kalibrację (sekcja 3)
-
-### ⚠️ "Wybierz wzorzec"
-**Przyczyna**: Nie wybrano wzorca przed startem  
-**Rozwiązanie**: Naciśnij jeden z przycisków wzorców
-
-### ⚠️ Nieprawidłowe pomiary dystansu
-**Przyczyna**: Błędna kalibracja  
-**Rozwiązanie**: Powtórz kalibrację
-
-### ⚠️ Pistolety nie włączają się
-**Przyczyna**: 
-1. Brak zasilania przekaźników
-2. Uszkodzony przekaźnik
-
-**Rozwiązanie**: Sprawdź połączenia elektryczne
-
-### ⚠️ Wyświetlacz nie działa
-**Przyczyna**: Brak zasilania lub uszkodzony wyświetlacz  
-**Rozwiązanie**: Sprawdź połączenia SPI
-
----
-
-## 11. KONSERWACJA
-
-### Codziennie:
-- ✅ Sprawdź czystość enkodera
-- ✅ Sprawdź połączenia elektryczne
-
-### Co tydzień:
-- ✅ Sprawdź kalibrację (pomiar testowy 10m)
-- ✅ Wyczyść wyświetlacz
-
-### Co miesiąc:
-- ✅ Sprawdź wszystkie przekaźniki (test sekwencyjny)
-- ✅ Sprawdź stan przycisków
-
----
-
-## 12. DANE TECHNICZNE
-
-- **Mikrokontroler**: ESP32-S3 N16R8
-- **Wyświetlacz**: ILI9341 320x240 TFT
-- **Enkoder**: KY-040 rotary encoder
-- **Przekaźniki**: 6 sztuk (sterowanie pistoletami)
-- **Zasilanie**: 12V DC
-- **Temperatura pracy**: -10°C do +50°C
-- **Dokładność pomiaru**: ±1 cm
-- **Maksymalna prędkość**: 30 km/h
-
----
-
-## 13. BEZPIECZEŃSTWO
-
-> [!CAUTION]
-> - Nie używaj systemu podczas deszczu bez osłony
-> - Nie przekraczaj maksymalnej prędkości 30 km/h
-> - Regularnie sprawdzaj stan połączeń elektrycznych
-> - Nie modyfikuj oprogramowania bez konsultacji
-
----
-
-## 14. KONTAKT I WSPARCIE
-
-W razie pytań lub problemów:
-- 📧 Email: support@roadpainter.pl
-- 📞 Telefon: +48 XXX XXX XXX
-- 🌐 GitHub: https://github.com/miastekpl/MTAntygravity23012026
-
----
-
-**Wersja dokumentu**: 1.0.0  
-**Data**: 2026-01-25  
-**Producent**: Road Painter Systems
+Autor: Dział Wsparcia Technicznego
+Kontakt: serwis@trassar.pl
+Data wydania: 27.01.2026
